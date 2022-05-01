@@ -11,18 +11,28 @@ function zprint#apply()
   let l:curw = winsaveview()
 
   " Write current unsaved buffer to a temp file
+  let l:current_lines = zprint#GetLines()
   let l:tmpname1 = tempname() . '.zprint1'
   let l:tmpname2 = tempname() . '.zprint2'
-  call writefile(zprint#GetLines(), l:tmpname1)
+  call writefile(l:current_lines, l:tmpname1)
 
   let current_col = col('.')
 
-  let l:cmd = 'zprint < ' . l:tmpname1 . ' > ' . l:tmpname2
+  let l:cmd = 'zprint < ' . l:tmpname1
   let l:out = zprint#System(l:cmd)
+  let l:updated_lines = split(l:out, "\n")
 
-  let diff_offset = len(readfile(l:tmpname2)) - line('$')
+  " Only write to file on formatting change
+  " https://github.com/bfontaine/zprint.vim/issues/1
+  if l:current_lines != l:updated_lines
+    let diff_offset = len(l:updated_lines) - line('$')
 
-  call zprint#update_file(l:tmpname2, fname)
+    call writefile(l:updated_lines, l:tmpname2)
+    call zprint#update_file(l:tmpname2, fname)
+
+    " be smart and jump to the line the new statement was added/removed
+    call cursor(line('.') + diff_offset, current_col)
+  end
 
   " clean up
   call delete(l:tmpname1)
@@ -30,9 +40,6 @@ function zprint#apply()
 
   " Restore our cursor/windows positions.
   call winrestview(l:curw)
-
-  " be smart and jump to the line the new statement was added/removed
-  call cursor(line('.') + diff_offset, current_col)
 
   " Syntax highlighting breaks less often.
   syntax sync fromstart
