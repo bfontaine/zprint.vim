@@ -10,33 +10,37 @@ function zprint#apply()
   " Save cursor position and many other things.
   let l:curw = winsaveview()
 
-  " Write current unsaved buffer to a temp file
   let l:current_lines = zprint#GetLines()
-  let l:tmpname1 = tempname() . '.zprint1'
-  let l:tmpname2 = tempname() . '.zprint2'
-  call writefile(l:current_lines, l:tmpname1)
+
+  " Write current unsaved buffer to a temp file
+  let l:inputfile = tempname() . '.zprint'
+  call writefile(l:current_lines, l:inputfile)
+
+  if has('win32')
+    let l:inputfile = tr(l:inputfile, '\', '/')
+  endif
 
   let current_col = col('.')
 
-  let l:cmd = 'zprint < ' . l:tmpname1
+  let l:cmd = 'zprint < ' . l:inputfile
   let l:out = zprint#System(l:cmd)
   let l:updated_lines = split(l:out, "\n")
+
+  call delete(l:inputfile)
 
   " Only write to file on formatting change
   " https://github.com/bfontaine/zprint.vim/issues/1
   if l:current_lines != l:updated_lines
     let diff_offset = len(l:updated_lines) - line('$')
 
-    call writefile(l:updated_lines, l:tmpname2)
-    call zprint#update_file(l:tmpname2, fname)
+    let l:outputfile = tempname() . '.zprint'
+    call writefile(l:updated_lines, l:outputfile)
+    call zprint#update_file(l:outputfile, fname)
+    call delete(l:outputfile)
 
     " be smart and jump to the line the new statement was added/removed
     call cursor(line('.') + diff_offset, current_col)
   end
-
-  " clean up
-  call delete(l:tmpname1)
-  call delete(l:tmpname2)
 
   " Restore our cursor/windows positions.
   call winrestview(l:curw)
