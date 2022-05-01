@@ -57,9 +57,20 @@ function! s:system(cmd, ...) abort
   let l:shell = &shell
   let l:shellredir = &shellredir
   let l:shellcmdflag = &shellcmdflag
+  let l:shellquote = &shellquote
+  let l:shellxquote = &shellxquote
 
-  if executable('/bin/sh')
+  if !has('win32')
+    if executable('/bin/sh')
       set shell=/bin/sh shellredir=>%s\ 2>&1 shellcmdflag=-c
+    endif
+  else
+    if executable($COMSPEC)
+      let &shell = $COMSPEC
+      set shellcmdflag=/C
+      set shellquote&
+      set shellxquote&
+    endif
   endif
 
   try
@@ -69,6 +80,8 @@ function! s:system(cmd, ...) abort
     let &shell = l:shell
     let &shellredir = l:shellredir
     let &shellcmdflag = l:shellcmdflag
+    let &shellquote = l:shellquote
+    let &shellxquote = l:shellxquote
   endtry
 endfunction
 
@@ -78,18 +91,16 @@ function! zprint#System(str, ...) abort
   return call('s:system', [a:str] + a:000)
 endfunction
 
-function! s:exec(cmd, ...) abort
-  let l:bin = a:cmd[0]
-  let l:cmd = join([l:bin] + a:cmd[1:])
-  let l:out = call('s:system', [l:cmd] + a:000)
-  return [l:out, v:shell_error]
-endfunction
-
 " Get all lines in the buffer as a a list.
 function! zprint#GetLines()
   let buf = getline(1, '$')
   if &encoding != 'utf-8'
     let buf = map(buf, 'iconv(v:val, &encoding, "utf-8")')
+  endif
+  if &l:fileformat == 'dos'
+    " line2byte() depend on 'fileformat' option.
+    " so if fileformat is 'dos', 'buf' must include '\r'.
+    let buf = map(buf, 'v:val."\r"')
   endif
   return buf
 endfunction
