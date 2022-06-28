@@ -29,3 +29,13 @@ If you use [Homebrew](https://brew.sh/), you can do it with `brew install bfonta
 
 Clone this repository, then copy the files from `autoload` and `ftplugin` in the same directories
 under `~/.vim`.
+
+### Configuration
+
+The variable `g:zprint#options_map` will be passed to the `zprint` call as its options map.
+
+```vim
+" use the project-specific .zprintrc instead of the global one, if available
+let g:zprint#options_map = '{:search-config? true}'
+```
+

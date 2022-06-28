@@ -21,8 +21,8 @@ function zprint#apply()
   endif
 
   let current_col = col('.')
-
-  let l:cmd = 'zprint < ' . l:inputfile
+  let l:options_map = get(g:, 'zprint#options_map', '{}')
+  let l:cmd = 'zprint "' . l:options_map . '" < ' . l:inputfile
   let l:out = zprint#System(l:cmd)
   let l:updated_lines = split(l:out, "\n")
 
