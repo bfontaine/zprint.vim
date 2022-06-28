@@ -35,7 +35,7 @@ under `~/.vim`.
 The variable `g:zprint#options_map` will be passed to the `zprint` call as its options map.
 
 ```vim
-;; use the project-specific .zprintrc instead of the global one, if available
+" use the project-specific .zprintrc instead of the global one, if available
 let g:zprint#options_map = '{:search-config? true}'
 ```
 
