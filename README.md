@@ -40,7 +40,7 @@ let g:zprint#options_map = '{:search-config? true}'
 ```
 
 The variable `g:zprint#make_autocmd` determines whether to create the autocmd to run
-`zprint` when a file is saved or not. Defaults to `v:false`.
+`zprint` when a file is saved or not. Defaults to `v:true`.
 
 ```vim
 let g:zprint#make_autocmd = v:false
